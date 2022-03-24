@@ -6,11 +6,14 @@ using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+    public static MainManager Instance;
+
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,14 +21,13 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
     // Start is called before the first frame update
     void Start()
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -36,6 +38,13 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        
+        if (PlayerPrefs.GetInt("high", 0) > 0 )
+        {
+            BestScoreText.text = "Best Score \n " + PlayerPrefs.GetString("kaliciplayer") + "\n"+ PlayerPrefs.GetInt("kalicihigh", 0).ToString();
+        }
+
+        
     }
 
     private void Update()
@@ -57,7 +66,7 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex -1);
             }
         }
     }
@@ -65,12 +74,34 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"Score : {m_Points}" ;
+
+        if (PlayerPrefs.GetInt("high") < m_Points)
+        {
+            PlayerPrefs.SetInt("high", m_Points);
+            BestScoreText.text = "Best Score \n " + PlayerPrefs.GetString("player") + "\n" + PlayerPrefs.GetInt("high", 0).ToString();
+
+        }
+       
+
+
+
     }
+
+
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        //high score daha yüksekse dosyaya burada yazmalýyýz
+        if (m_Points == PlayerPrefs.GetInt("high", 0) && m_Points > PlayerPrefs.GetInt("kalicihigh", 0) )
+        {
+            PlayerPrefs.SetInt("kalicihigh", m_Points);
+            PlayerPrefs.SetString("kaliciplayer", PlayerPrefs.GetString("player"));
+        }
     }
+
+
+
 }
